@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Monitoring</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(120deg, #f0f4f8 0%, #e0eafc 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #1f77b4;
+            margin-bottom: 32px;
+        }
+        .charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 32px;
+        }
+        .chart-box {
+            flex: 1 1 250px;
+            min-width: 250px;
+            max-width: 350px;
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(31,119,180,0.07);
+            padding: 18px 10px 10px 10px;
+            margin-bottom: 24px;
+        }
+        .alert {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>System Monitoring</h1>
+        <div class="charts-row">
+            <div class="chart-box">
+                <div id="cpu-gauge"></div>
+            </div>
+            <div class="chart-box">
+                <div id="mem-donut"></div>
+            </div>
+            <div class="chart-box">
+                <div id="bar-chart"></div>
+            </div>
+        </div>
+        {% if message %}
+        <div class="alert alert-danger">{{ message }}</div>
+        {% endif %}
+    </div>
+    <script>
+        // Auto-refresh the page every 5 seconds
+        setTimeout(function() {
+            window.location.reload();
+        }, 5000);
+
+        // CPU Gauge Chart
+        var cpuGauge = {
+            type: "indicator",
+            mode: "gauge+number+delta",
+            value: {{ cpu_percent }},
+            title: { text: "CPU Usage", font: { size: 22, color: '#1f77b4' } },
+            delta: { reference: 50, increasing: { color: "#ff5f5f" }, decreasing: { color: "#1f77b4" } },
+            gauge: {
+                axis: { range: [0, 100], tickwidth: 1, tickcolor: "#1f77b4" },
+                bar: { color: "#1f77b4" },
+                bgcolor: "#f8fafc",
+                borderwidth: 2,
+                bordercolor: "#ccc",
+                steps: [
+                    { range: [0, 50], color: "#d9f0a3" },
+                    { range: [50, 85], color: "#ffeb84" },
+                    { range: [85, 100], color: "#ff5f5f" }
+                ],
+                threshold: {
+                    line: { color: "red", width: 4 },
+                    thickness: 0.75,
+                    value: {{ cpu_percent }}
+                }
+            }
+        };
+        var cpuGaugeLayout = {
+            margin: { t: 40, b: 0, l: 0, r: 0 },
+            height: 260,
+            paper_bgcolor: '#f8fafc',
+            font: { color: '#1f77b4', family: 'Segoe UI, Arial, sans-serif' }
+        };
+        Plotly.newPlot('cpu-gauge', [cpuGauge], cpuGaugeLayout);
+
+        // Memory Donut Chart
+        var memDonut = {
+            values: [{{ mem_percent }}, {{ 100 - mem_percent }}],
+            labels: ['Used', 'Free'],
+            marker: { colors: ['#ff5f5f', '#d9f0a3'] },
+            hole: .6,
+            type: 'pie',
+            textinfo: 'label+percent',
+            textposition: 'inside',
+            showlegend: false
+        };
+        var memDonutLayout = {
+            title: { text: 'Memory Usage', font: { size: 22, color: '#1f77b4' } },
+            margin: { t: 40, b: 0, l: 0, r: 0 },
+            height: 260,
+            paper_bgcolor: '#f8fafc',
+            font: { color: '#1f77b4', family: 'Segoe UI, Arial, sans-serif' }
+        };
+        Plotly.newPlot('mem-donut', [memDonut], memDonutLayout);
+
+        // Bar Chart for CPU and Memory
+        var barChart = {
+            x: ['CPU', 'Memory'],
+            y: [{{ cpu_percent }}, {{ mem_percent }}],
+            marker: {
+                color: ['#1f77b4', '#ff5f5f'],
+                line: { width: 2, color: '#fff' }
+            },
+            type: 'bar',
+            text: [{{ cpu_percent }}, {{ mem_percent }}],
+            textposition: 'auto',
+            hoverinfo: 'y',
+            opacity: 0.85
+        };
+        var barChartLayout = {
+            title: { text: 'Utilization Comparison', font: { size: 22, color: '#1f77b4' } },
+            yaxis: { range: [0, 100], title: 'Percent (%)' },
+            margin: { t: 40, b: 40, l: 40, r: 0 },
+            height: 260,
+            paper_bgcolor: '#f8fafc',
+            font: { color: '#1f77b4', family: 'Segoe UI, Arial, sans-serif' }
+        };
+        Plotly.newPlot('bar-chart', [barChart], barChartLayout);
+    </script>
+</body>
+</html>
