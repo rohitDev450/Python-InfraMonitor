@@ -13,6 +13,6 @@ COPY --from=builder /install /usr/local
 COPY app.py .
 COPY templates ./templates
 
-EXPOSE 5000
+EXPOSE 5001
 
 CMD ["python","app.py"]
