@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: python-infra-monitor-ingress
+spec:
+  rules:
+  - host: monitor.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: python-infra-monitor-service
+            port:
+              number: 5000
